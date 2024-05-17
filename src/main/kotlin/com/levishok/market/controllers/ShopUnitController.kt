@@ -32,4 +32,9 @@ class ShopUnitController(
         val shopUnit = shopUnitService.find(id) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
         return shopUnitToDtoConverter.convert(shopUnit)
     }
+
+    @DeleteMapping("/delete/{id}")
+    fun deleteShopUnit(@PathVariable id: UUID) {
+        shopUnitService.delete(id)
+    }
 }

@@ -47,12 +47,7 @@ class ShopUnitServiceImpl(
         return repository.findByIdWithChildren(id)
     }
 
-    @Transactional
-    override fun delete(id: UUID): Boolean {
-        if (repository.existsById(id)) {
-            repository.deleteById(id)
-            return true
-        }
-        return false
+    override fun delete(id: UUID) {
+        repository.deleteById(id)
     }
 }

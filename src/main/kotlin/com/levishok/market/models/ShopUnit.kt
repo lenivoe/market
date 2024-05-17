@@ -2,6 +2,8 @@ package com.levishok.market.models
 
 import jakarta.persistence.*
 import org.hibernate.annotations.Check
+import org.hibernate.annotations.OnDelete
+import org.hibernate.annotations.OnDeleteAction
 import java.time.Instant
 import java.util.*
 
@@ -29,11 +31,11 @@ open class ShopUnit(
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.PERSIST, CascadeType.MERGE])
     @JoinColumn(name = "parent_id")
+    @OnDelete(action = OnDeleteAction.CASCADE)
     open var parent: ShopUnit? = null,
 
     /** readonly property */
-    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, targetEntity = ShopUnit::class,
-        cascade = [CascadeType.REMOVE])
+    @OneToMany(mappedBy = "parent", fetch = FetchType.LAZY, targetEntity = ShopUnit::class, cascade = [])
     open var children: List<ShopUnit> = listOf(),
 ) {
     enum class Type { OFFER, CATEGORY }

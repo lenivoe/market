@@ -38,7 +38,7 @@ class PostgresShopUnitRepositoryImpl : PostgresShopUnitRepository {
             .forEach { query.setParameter(parameterIndex++, it) }
 
         @Suppress("UNCHECKED_CAST")
-        return mapToShopUnit(query.resultStream as Stream<Array<*>>)
+        return mapQueryResultToShopUnit(query.resultStream as Stream<Array<*>>)
     }
 
     @Transactional(readOnly = true)
@@ -61,7 +61,7 @@ class PostgresShopUnitRepositoryImpl : PostgresShopUnitRepository {
             .setParameter("id", id)
 
         @Suppress("UNCHECKED_CAST")
-        val entities = mapToShopUnit(query.resultStream as Stream<Array<*>>)
+        val entities = mapQueryResultToShopUnit(query.resultStream as Stream<Array<*>>)
 
         if (entities.isEmpty()) {
             return null
@@ -74,6 +74,7 @@ class PostgresShopUnitRepositoryImpl : PostgresShopUnitRepository {
         return unit
     }
 
+    @Transactional
     override fun updateAncestorsDate(ids: Iterable<UUID>, date: Instant) {
         if (!ids.iterator().hasNext()) {
             return
@@ -101,7 +102,7 @@ class PostgresShopUnitRepositoryImpl : PostgresShopUnitRepository {
             .executeUpdate()
     }
 
-    private fun mapToShopUnit(data: Stream<Array<*>>): List<ShopUnit> {
+    private fun mapQueryResultToShopUnit(data: Stream<Array<*>>): List<ShopUnit> {
         data class ShopUnitBuilder(
             val entity: ShopUnit,
             val parentId: UUID?,

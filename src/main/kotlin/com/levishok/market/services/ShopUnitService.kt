@@ -7,5 +7,5 @@ import java.util.UUID
 interface ShopUnitService {
     fun save(dto: ImportShopUnitDtoList)
     fun find(id: UUID): ShopUnit?
-    fun delete(id: UUID): Boolean
+    fun delete(id: UUID)
 }
