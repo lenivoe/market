@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:16.2-alpine3.19
+    container_name: postgres-1
+    command: ["postgres", "-c", "log_statement=all"]
+    environment:
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - postgres-net
+
+  adminer:
+    image: adminer
+    container_name: adminer-1
+    environment:
+      ADMINER_DEFAULT_DB_DRIVER: postgres
+      ADMINER_DEFAULT_SERVER: postgres
+      ADMINER_DEFAULT_DB_HOST: postgres
+      ADMINER_DEFAULT_DB_NAME: market
+    restart: always
+    depends_on:
+      - postgres
+    ports:
+      - 7777:8080
+    networks:
+      - postgres-net
+
+networks:
+  postgres-net:
+    driver: bridge
