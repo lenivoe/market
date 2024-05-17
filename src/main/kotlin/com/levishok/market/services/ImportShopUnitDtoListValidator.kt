@@ -1,6 +1,6 @@
 package com.levishok.market.services
 
-import com.levishok.market.dto.ImportShopUnitDtoList
+import com.levishok.market.messages.ImportShopUnitDtoList
 import com.levishok.market.models.ShopUnit
 import org.springframework.stereotype.Service
 

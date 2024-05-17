@@ -1,13 +1,10 @@
-package com.levishok.market.dto
+package com.levishok.market.messages
 
 import com.levishok.market.models.ShopUnit
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.*
 
-class ImportShopUnitDtoList(
-    val items: List<Item>,
-    val updateDate: LocalDateTime
-) {
+data class ImportShopUnitDtoList(val items: List<Item>, val updateDate: Instant) {
     class Item(
         val id: UUID,
         val name: String,
