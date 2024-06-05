@@ -6,7 +6,6 @@ import com.levishok.market.models.ShopUnit
 import com.levishok.market.repositories.ShopUnitRepository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Isolation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
@@ -17,7 +16,8 @@ class ShopUnitServiceImpl(
     private val toEntityConverter: ConverterToStream<ImportShopUnitDtoList, ShopUnit>
 ) : ShopUnitService {
 
-    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+//    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+    @Transactional
     @Throws(IllegalArgumentException::class)
     override fun save(dto: ImportShopUnitDtoList) {
         val units = toEntityConverter.convert(dto).toList()
@@ -47,7 +47,12 @@ class ShopUnitServiceImpl(
         return repository.findByIdWithChildren(id)
     }
 
-    override fun delete(id: UUID) {
-        repository.deleteById(id)
+    @Transactional
+    override fun delete(id: UUID): Boolean {
+        val isExists = repository.existsById(id)
+        if (isExists) {
+            repository.deleteById(id)
+        }
+        return isExists
     }
 }

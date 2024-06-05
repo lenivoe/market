@@ -18,6 +18,13 @@ class GetShopUnitDto(
     val parentId: UUID?,
     val children: List<GetShopUnitDto>?,
 ) {
+    /**
+     * если type == OFFER, price - цена товара,
+     *
+     * если type == CATEGORY, price - средняя (!) цена товаров из этой категории
+     *
+     * если в категории нет товаров, в том числе во вложенных категориях, price == null
+     */
     val price: Int?
         get() = when (type) {
             ShopUnit.Type.OFFER -> totalPrice

@@ -1,0 +1,8 @@
+package com.levishok.market.services.validators
+
+class IncorrectValueException : RuntimeException {
+    constructor() : super()
+    constructor(message: String?) : super(message)
+    constructor(message: String?, cause: Throwable?) : super(message, cause)
+    constructor(cause: Throwable?) : super(cause)
+}
