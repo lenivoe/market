@@ -13,35 +13,44 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.converter.HttpMessageNotReadableException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.context.request.WebRequest
 import java.util.*
 
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/nodes")
 class ShopUnitController(
     private val shopUnitService: ShopUnitService,
     private val importDtoValidator: Validator<ImportShopUnitDtoList>,
     private val shopUnitToDtoConverter: Converter<ShopUnit, GetShopUnitDto>,
 ) {
-    @PostMapping("/imports")
+    @PostMapping
     fun importShopUnits(@RequestBody dto: ImportShopUnitDtoList) {
         importDtoValidator.requireCorrect(dto)
         shopUnitService.save(dto)
     }
 
-    @GetMapping("/nodes/{id}")
+    @GetMapping("/{id}")
     fun getShopUnit(@PathVariable id: UUID): GetShopUnitDto {
         val shopUnit = shopUnitService.find(id) ?: throw MissingEntityException()
         return shopUnitToDtoConverter.convert(shopUnit)
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     fun deleteShopUnit(@PathVariable id: UUID) {
         if (!shopUnitService.delete(id)) {
             throw MissingEntityException()
         }
     }
+
+//    @GetMapping("/sales")
+//    fun getSalesStatistic(@RequestParam(required = true) date: Instant): List<ShopUnitStatisticDto> {
+//        throw NotImplementedError()
+//    }
+//
+//    @GetMapping("/{id}/statistic")
+//    fun getShopUnitStatistic(@PathVariable id: UUID): List<ShopUnitStatisticDto> {
+//        throw NotImplementedError()
+//    }
 
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -53,13 +62,13 @@ class ShopUnitController(
             MethodArgumentNotValidException::class
         ]
     )
-    private fun handleIncorrectValue(ex: Exception, request: WebRequest): ErrorMessage {
+    private fun handleIncorrectValue(): ErrorMessage {
         return ErrorMessage(HttpStatus.BAD_REQUEST, "Validation Failed")
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
     @ExceptionHandler(value = [MissingEntityException::class])
-    private fun handleMissingEntity(ex: Exception, request: WebRequest): ErrorMessage {
+    private fun handleMissingEntity(): ErrorMessage {
         return ErrorMessage(HttpStatus.NOT_FOUND, "Item not found")
     }
 }

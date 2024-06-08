@@ -1,10 +1,10 @@
 openapi: 3.0.0
 info:
-  description: "Вступительное задание в Летнюю Школу Бэкенд Разработки Яндекса 2022"
+  description: "Вступительное задание в Летнюю Школу Бэкенд Разработки Яндекса 2022. Версия на котлин."
   title: Mega Market Open API
   version: "1.0"
 paths:
-  /imports:
+  /nodes:
     post:
       tags:
         - Базовые задачи
@@ -46,7 +46,7 @@ paths:
                       "code": 400,
                       "message": "Validation Failed"
                     }
-  /delete/{id}:
+  /nodes/{id}:
     delete:
       tags:
         - Базовые задачи
@@ -94,7 +94,6 @@ paths:
                       "code": 404,
                       "message": "Item not found"
                     }
-  /nodes/{id}:
     get:
       tags:
         - Базовые задачи
@@ -145,7 +144,7 @@ paths:
                       "code": 404,
                       "message": "Item not found"
                     }
-  /sales:
+  /nodes/sales:
     get:
       tags:
         - Дополнительные задачи
@@ -180,7 +179,7 @@ paths:
                       "code": 400,
                       "message": "Validation Failed"
                     }
-  /node/{id}/statistic:
+  /nodes/{id}/statistic:
     get:
       tags:
         - Дополнительные задачи

@@ -58,27 +58,26 @@ class ShopUnitControllerTest {
 
     private val importDtoList = listOf(
         ImportShopUnitDtoListBuilder("2022-02-01T12:00:00.000Z")
-            .addItem("Товары", "CATEGORY", null, ids[0]),
+            .addItem("Товары", ShopUnit.Type.CATEGORY, null, ids[0]),
 
         ImportShopUnitDtoListBuilder("2022-02-02T12:00:00.000Z")
-            .addItem("jPhone 13", "OFFER", 79999, ids[2], ids[1])
-            .addItem("Xomiа Readme 10", "OFFER", 59999, ids[3], ids[1])
-            .addItem("Смартфоны", "CATEGORY", null, ids[1], ids[0]),
+            .addItem("jPhone 13", ShopUnit.Type.OFFER, 79999, ids[2], ids[1])
+            .addItem("Xomiа Readme 10", ShopUnit.Type.OFFER, 59999, ids[3], ids[1])
+            .addItem("Смартфоны", ShopUnit.Type.CATEGORY, null, ids[1], ids[0]),
 
         ImportShopUnitDtoListBuilder("2022-02-03T12:00:00.000Z")
-            .addItem("Samson 70\" LED UHD Smart", "OFFER", 32999, ids[5], ids[4])
-            .addItem("Phyllis 50\" LED UHD Smarter", "OFFER", 49999, ids[6], ids[4])
-            .addItem("Телевизоры", "CATEGORY", null, ids[4], ids[0]),
+            .addItem("Samson 70\" LED UHD Smart", ShopUnit.Type.OFFER, 32999, ids[5], ids[4])
+            .addItem("Phyllis 50\" LED UHD Smarter", ShopUnit.Type.OFFER, 49999, ids[6], ids[4])
+            .addItem("Телевизоры", ShopUnit.Type.CATEGORY, null, ids[4], ids[0]),
 
-        ImportShopUnitDtoListBuilder("2022-02-03T12:00:00.000Z")
-            .addItem("Goldstar 65\" LED UHD LOL Very Smart", "OFFER", 69999, ids[7], ids[4]),
+        ImportShopUnitDtoListBuilder("2022-02-03T21:30:00.000Z")
+            .addItem("Goldstar 65\" LED UHD LOL Very Smart", ShopUnit.Type.OFFER, 69999, ids[7], ids[4]),
     ).map { it.build() }
-
 
     @BeforeEach
     fun clear() {
         transactionTemplate.executeWithoutResult {
-            entityManager.createQuery("truncate table ShopUnit").executeUpdate()
+            entityManager.createNativeQuery("truncate table shop_unit").executeUpdate()
         }
     }
 
@@ -88,7 +87,7 @@ class ShopUnitControllerTest {
             log.info(">>> test part #$i <<<")
 
             val body = objectMapper.writeValueAsString(dto)
-            val result = sendRequest(HttpMethod.POST, "/imports", null, body)
+            val result = sendRequest(HttpMethod.POST, "/nodes", null, body)
                 .andReturn()
 
             assertEquals(200, result.response.status) { "part #$i: expected code 200, actual code $result" }
@@ -98,7 +97,7 @@ class ShopUnitControllerTest {
     @ParameterizedTest
     @MethodSource("importReturns400Provider")
     fun importReturns400(body: String) {
-        sendRequest(HttpMethod.POST, "/imports", HttpStatus.BAD_REQUEST, body)
+        sendRequest(HttpMethod.POST, "/nodes", HttpStatus.BAD_REQUEST, body)
     }
 
     companion object {
@@ -168,7 +167,7 @@ class ShopUnitControllerTest {
             "id": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
             "price": 58599,
             "parentId": null,
-            "date": "2022-02-03T15:00:00.000Z",
+            "date": "2022-02-03T21:30:00.000Z",
             "children": [
                 {
                     "type": "CATEGORY",
@@ -176,7 +175,7 @@ class ShopUnitControllerTest {
                     "id": "1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2",
                     "parentId": "069cb8d7-bbdd-47d3-ad8f-82ef4c269df1",
                     "price": 50999,
-                    "date": "2022-02-03T15:00:00.000Z",
+                    "date": "2022-02-03T21:30:00.000Z",
                     "children": [
                         {
                             "type": "OFFER",
@@ -202,7 +201,7 @@ class ShopUnitControllerTest {
                             "id": "73bc3b36-02d1-4245-ab35-3106c9ee1c65",
                             "parentId": "1cc0129a-2bfe-474c-9ee6-d435bf5fc8f2",
                             "price": 69999,
-                            "date": "2022-02-03T15:00:00.000Z",
+                            "date": "2022-02-03T21:30:00.000Z",
                             "children": null
                         }
                     ]
@@ -238,11 +237,11 @@ class ShopUnitControllerTest {
             ]
         }""".trimIndent()
 
-        log.info(">>> preparing test data <<<")
+        log.info(">>> preparing data: creating entities <<<")
         for (dto in importDtoList) {
-            sendRequest(HttpMethod.POST, "/imports", HttpStatus.OK, objectMapper.writeValueAsString(dto))
+            sendRequest(HttpMethod.POST, "/nodes", HttpStatus.OK, objectMapper.writeValueAsString(dto))
         }
-        log.info(">>> base part of test <<<")
+        log.info(">>> checking: found entity <<<")
         sendRequest(HttpMethod.GET, "/nodes/${ids[0]}", HttpStatus.OK)
             .andExpect(content().json(responseBody))
     }
@@ -260,22 +259,26 @@ class ShopUnitControllerTest {
 
     @Test
     fun deleteReturns200() {
-        log.info(">>> preparing test data <<<")
+        log.info(">>> preparing data: creating entities <<<")
         for (dto in importDtoList) {
-            sendRequest(HttpMethod.POST, "/imports", HttpStatus.OK, objectMapper.writeValueAsString(dto))
+            sendRequest(HttpMethod.POST, "/nodes", HttpStatus.OK, objectMapper.writeValueAsString(dto))
         }
-        log.info(">>> base part of test <<<")
-        sendRequest(HttpMethod.DELETE, "/delete/${ids[0]}", HttpStatus.OK)
+
+        log.info(">>> main part: deleting of entity <<<")
+        sendRequest(HttpMethod.DELETE, "/nodes/${ids[0]}", HttpStatus.OK)
+
+        log.info(">>> checking: missing entity <<<")
+        sendRequest(HttpMethod.GET, "/nodes/${ids[0]}", HttpStatus.NOT_FOUND)
     }
 
     @Test
     fun deleteReturns400() {
-        sendRequest(HttpMethod.DELETE, "/delete/invalid-uuid", HttpStatus.BAD_REQUEST)
+        sendRequest(HttpMethod.DELETE, "/nodes/invalid-uuid", HttpStatus.BAD_REQUEST)
     }
 
     @Test
     fun deleteReturns404() {
-        sendRequest(HttpMethod.DELETE, "/delete/${ids[0]}", HttpStatus.NOT_FOUND)
+        sendRequest(HttpMethod.DELETE, "/nodes/${ids[0]}", HttpStatus.NOT_FOUND)
     }
 
 
@@ -284,13 +287,10 @@ class ShopUnitControllerTest {
         val updateDate: Instant = Instant.parse(updateDate)
 
         fun addItem(
-            name: String, type: String, price: Int?, id: String, parentId: String? = null
+            name: String, type: ShopUnit.Type, price: Int?, id: String, parentId: String? = null
         ): ImportShopUnitDtoListBuilder {
-            items.add(
-                ImportShopUnitDtoList.Item(
-                    UUID.fromString(id), name, ShopUnit.Type.valueOf(type), price, UUID.fromString(parentId)
-                )
-            )
+            val parentUuid = parentId?.let { UUID.fromString(it) }
+            items.add(ImportShopUnitDtoList.Item(UUID.fromString(id), name, type, price, parentUuid))
             return this
         }
 
@@ -307,13 +307,11 @@ class ShopUnitControllerTest {
         }
 
         var result = mockMvc.perform(req)
-        if (expectedStatus === null) {
-            return result
-        }
-
-        result = result.andExpect(status().`is`(expectedStatus.value()))
-        if (expectedStatus.isError) {
-            result = result.andExpect(jsonPath("$.code").value(expectedStatus.value()))
+        if (expectedStatus !== null) {
+            result = result.andExpect(status().`is`(expectedStatus.value()))
+            if (expectedStatus.isError) {
+                result = result.andExpect(jsonPath("$.code").value(expectedStatus.value()))
+            }
         }
         return result
     }
