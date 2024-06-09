@@ -1,0 +1,44 @@
+name: market-testing
+
+services:
+  postgres:
+    attach: false
+    image: postgres:alpine
+    command: -c log_statement=all
+    environment:
+      POSTGRES_DB: test
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1G
+    networks:
+      - market-net
+
+  app:
+    build:
+      context: ../
+      dockerfile_inline: |
+        FROM openjdk:17-slim
+        COPY ./gradle ./gradle
+        COPY ./gradlew ./*.gradle.kts ./
+        RUN ./gradlew wrapper
+        COPY ./src ./src
+        RUN ./gradlew build -x test
+        CMD ./gradlew test
+    environment:
+      DB_HOST: 'postgres'
+      DB_PORT: 5432
+      DB_NAME: test
+      DB_USER: test
+      DB_PASSWORD: test
+    depends_on:
+      - postgres
+    networks:
+      - market-net
+
+networks:
+  market-net:
+    driver: bridge
