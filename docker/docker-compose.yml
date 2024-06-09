@@ -1,39 +1,55 @@
+name: market
+
 services:
   postgres:
-    image: postgres:16.2-alpine3.19
-    container_name: postgres-1
-    command: ["postgres", "-c", "log_statement=all"]
-    environment:
-      POSTGRES_DB: '${POSTGRES_DB}'
-      POSTGRES_USER: '${POSTGRES_USER}'
-      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+    attach: false
+    image: postgres:alpine
+    command: -c log_statement=all -p ${DB_PORT}
     ports:
-      - "5432:5432"
-    restart: unless-stopped
+      - '5432:${DB_PORT}'
+    environment:
+      POSTGRES_DB: '${DB_NAME}'
+      POSTGRES_USER: '${DB_USER}'
+      POSTGRES_PASSWORD: '${DB_PASSWORD}'
+    restart: on-failure
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 1G
     networks:
-      - postgres-net
+      - market-net
 
   adminer:
+    attach: false
     image: adminer
-    container_name: adminer-1
-    environment:
-      ADMINER_DEFAULT_DB_DRIVER: postgres
-      ADMINER_DEFAULT_SERVER: postgres
-      ADMINER_DEFAULT_DB_HOST: postgres
-      ADMINER_DEFAULT_DB_NAME: market
-    restart: always
+    restart: on-failure
     depends_on:
       - postgres
     ports:
-      - 7777:8080
+      - '7777:8080'
     networks:
-      - postgres-net
+      - market-net
+
+  app:
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile
+    restart: on-failure
+    environment:
+      DB_HOST: 'postgres'
+      DB_PORT: '${DB_PORT}'
+      DB_NAME: '${DB_NAME}'
+      DB_USER: '${DB_USER}'
+      DB_PASSWORD: '${DB_PASSWORD}'
+    depends_on:
+      - postgres
+    ports:
+      - '80:8080'
+    networks:
+      - market-net
+
 
 networks:
-  postgres-net:
+  market-net:
     driver: bridge

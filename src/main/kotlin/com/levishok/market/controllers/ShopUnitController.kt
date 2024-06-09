@@ -42,16 +42,6 @@ class ShopUnitController(
         }
     }
 
-//    @GetMapping("/sales")
-//    fun getSalesStatistic(@RequestParam(required = true) date: Instant): List<ShopUnitStatisticDto> {
-//        throw NotImplementedError()
-//    }
-//
-//    @GetMapping("/{id}/statistic")
-//    fun getShopUnitStatistic(@PathVariable id: UUID): List<ShopUnitStatisticDto> {
-//        throw NotImplementedError()
-//    }
-
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(
