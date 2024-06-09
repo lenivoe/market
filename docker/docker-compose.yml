@@ -2,7 +2,6 @@ name: market
 
 services:
   postgres:
-    attach: false
     image: postgres:alpine
     command: -c log_statement=all -p ${DB_PORT}
     ports:
